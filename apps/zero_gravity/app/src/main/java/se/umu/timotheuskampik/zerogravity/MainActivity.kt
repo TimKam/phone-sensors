@@ -47,7 +47,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             last.text = "Last zero gravity period: ${currentPeriodLength.toString()}ms"
             if(currentPeriodLength > longestPeriodLength) {
                 longestPeriodLength = currentPeriodLength
-                longest.text = "Longest zero gravity period: ${longestPeriodLength.toString()}ms"
+                longest.text =
+                        "Longest zero gravity period: ${longestPeriodLength.toString()}ms"
             }
         }
     }
@@ -60,7 +61,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         val x = event!!.values[0].toDouble()
         val y = event!!.values[1].toDouble()
         val z = event!!.values[2].toDouble()
-        if(Math.sqrt(Math.pow(x, 2.0) + Math.pow(y, 2.0) + Math.pow(z, 2.0)) < 1) {
+        if(Math.sqrt(Math.pow(x, 2.0) + Math.pow(y, 2.0) + Math.pow(z, 2.0)) < 0.1) {
             return true
         }
         return false
