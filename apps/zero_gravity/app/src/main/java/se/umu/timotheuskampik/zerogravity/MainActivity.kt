@@ -7,6 +7,7 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
@@ -16,13 +17,13 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private lateinit var sensorManager : SensorManager
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if(savedInstanceState == null){
+        if(savedInstanceState == null) {
             setContentView(R.layout.activity_main)
-            // set up sensor listener
-            sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+            // set up sensor listener for accelerometer
+            sensorManager = getSystemService(Context.SENSOR_SERVICE)
+                    as SensorManager
             sensorManager.registerListener(
                     this,
                     sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
@@ -41,14 +42,18 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             // end current zero gravity period
             /*Log.d("T", event.timestamp.toString())
             Log.d("T", startTimeCurrentPeriod!!.toString())*/
-            val currentPeriodLength = // calculate difference and convert nano to milliseconds
-                    (event.timestamp - startTimeCurrentPeriod!!) / 1000000
+            // calculate difference between start and current timestamp
+            val currentPeriodLength =
+                    (event.timestamp - startTimeCurrentPeriod!!)
             startTimeCurrentPeriod = null
-            last.text = "Last zero gravity period: ${currentPeriodLength.toString()}ms"
+            last.text =
+                    "Last zero gravity period:" +
+                            "${currentPeriodLength.toString()} nanoseconds"
             if(currentPeriodLength > longestPeriodLength) {
                 longestPeriodLength = currentPeriodLength
                 longest.text =
-                        "Longest zero gravity period: ${longestPeriodLength.toString()}ms"
+                        "Longest zero gravity period:" +
+                                "${longestPeriodLength.toString()} nanoseconds"
             }
         }
     }
@@ -61,7 +66,11 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         val x = event!!.values[0].toDouble()
         val y = event!!.values[1].toDouble()
         val z = event!!.values[2].toDouble()
-        if(Math.sqrt(Math.pow(x, 2.0) + Math.pow(y, 2.0) + Math.pow(z, 2.0)) < 0.1) {
+
+        if(Math.sqrt(Math.pow(x, 2.0) +
+                Math.pow(y, 2.0) +
+                Math.pow(z, 2.0))
+                < 0.1) {
             return true
         }
         return false
