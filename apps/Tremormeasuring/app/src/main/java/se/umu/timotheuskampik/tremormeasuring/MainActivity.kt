@@ -52,10 +52,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                     StatUtils.populationVariance(measurementsY.toDoubleArray()))
             val standardDeviationZ = Math.ceil(
                     StatUtils.populationVariance(measurementsZ.toDoubleArray()))
-            var impactFactor = (
+            var impactFactor =
                     standardDeviationX +
                     standardDeviationY +
-                    standardDeviationZ) / 3.0
+                    standardDeviationZ
             if(impactFactor < 1) {
                 impactFactor = 1.0
             }
