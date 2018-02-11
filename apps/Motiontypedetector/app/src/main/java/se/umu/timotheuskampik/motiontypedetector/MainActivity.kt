@@ -1,7 +1,6 @@
-package se.umu.timotheuskampik.tremormeasuring
+package se.umu.timotheuskampik.motiontypedetector
 
 import android.content.Context
-import android.graphics.Color
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -11,22 +10,19 @@ import android.os.Bundle
 import kotlinx.android.synthetic.main.activity_main.*
 import org.apache.commons.math3.stat.StatUtils
 
-
 class MainActivity : AppCompatActivity(), SensorEventListener {
-
-    private lateinit var sensorManager : SensorManager
 
     private var windowStartTime : Long? = null
     private var measurementsX = arrayListOf<Double>()
     private var measurementsY = arrayListOf<Double>()
     private var measurementsZ = arrayListOf<Double>()
 
+    private lateinit var sensorManager : SensorManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if(savedInstanceState == null) {
             setContentView(R.layout.activity_main)
-            container.setBackgroundColor(Color.rgb(0,255,0))
-            container.invalidate()
             // set up sensor listener for accelerometer
             sensorManager = getSystemService(Context.SENSOR_SERVICE)
                     as SensorManager
@@ -42,27 +38,11 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         measurementsX.add(event!!.values[0].toDouble())
         measurementsY.add(event!!.values[1].toDouble())
         measurementsZ.add(event!!.values[2].toDouble())
-        if(windowStartTime == null) {
+        if (windowStartTime == null) {
             windowStartTime = event!!.timestamp
-        } else if(event!!.timestamp - windowStartTime!! > 1000000000) {
+        } else if (event!!.timestamp - windowStartTime!! > 1000000000) {
             windowStartTime = event!!.timestamp
-            val populationVarianceX = Math.ceil(
-                    StatUtils.populationVariance(measurementsX.toDoubleArray()))
-            val populationVarianceY = Math.ceil(
-                    StatUtils.populationVariance(measurementsY.toDoubleArray()))
-            val populationVarianceZ = Math.ceil(
-                    StatUtils.populationVariance(measurementsZ.toDoubleArray()))
-            var impactFactor =
-                    populationVarianceX +
-                    populationVarianceY +
-                    populationVarianceZ
-            if(impactFactor < 1) {
-                impactFactor = 1.0
-            }
-            val green = 255/impactFactor
-            val red = 255/(255/impactFactor)
-            container.setBackgroundColor(
-                    Color.rgb(red.toInt(), green.toInt(),0))
+            status.text = determineMotionType()
             measurementsX.clear()
             measurementsY.clear()
             measurementsZ.clear()
@@ -74,4 +54,25 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         // Do nothing
     }
 
+    private fun determineMotionType(): String {
+        val standardDeviationX = Math.sqrt(
+                StatUtils.populationVariance(measurementsX.toDoubleArray()))
+        val standardDeviationY = Math.sqrt(
+                StatUtils.populationVariance(measurementsY.toDoubleArray()))
+        val standardDeviationZ = Math.sqrt(
+                StatUtils.populationVariance(measurementsZ.toDoubleArray()))
+
+        if(standardDeviationX > 0.5 && standardDeviationY > 0.5) {
+            if(standardDeviationZ > 7) {
+                return "Jumping"
+            } else if(standardDeviationZ > 4) {
+                return "Running"
+            } else if(standardDeviationZ > 0.35) {
+                return "Walking"
+            }
+            return "Standing"
+        }
+        return "Standing"
+
+    }
 }
